@@ -1,0 +1,1 @@
+{"name":"Local: q","url":"d:\\VelocityX\\client\\public\\q.cpp","tests":[{"id":1773327779375,"input":"4\n2\n1 2 2 1\n2\n2 1 2 1\n3\n2 1 3 1 3 2\n4\n4 1 1 2 3 4 2 3\n","output":"Yes\nYes\nNo\nYes"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"d:\\VelocityX\\client\\public\\q.cpp","group":"local","local":true}
