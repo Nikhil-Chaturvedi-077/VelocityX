@@ -19,20 +19,20 @@ const CarDetails = () => {
   const handleSubmit = async(e)=>{
     e.preventDefault();
     try {
-      const {data} =  await axios.post('/api/bookings/create',{
+      const {data} =  await axios.post('/api/booking/create',{
         car:id,
         pickupDate,
         returnDate
       })
 
       if(data.success){
-        toast.success(data.meaasge);
+        toast.success(data.message);
         navigate('/my-bookings')
       }else{
-        toast.error(data.meaasge);
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.meaasge);
+      toast.error(error.message);
     }
   }
 

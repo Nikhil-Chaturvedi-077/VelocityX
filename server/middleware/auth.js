@@ -30,3 +30,16 @@ export const protect = async (req, res, next)=>{
     });
   }
 }
+
+export const ownerProtect = async (req, res, next) => {
+  await protect(req, res, () => {
+    if (req.user && req.user.role === 'owner') {
+      next();
+    } else {
+      return res.json({
+        success: false,
+        message: "Unauthorized: Owner access required"
+      });
+    }
+  });
+}

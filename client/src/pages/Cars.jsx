@@ -17,16 +17,36 @@ const Cars = () => {
 
   const [input, setInput] = useState('');
 
-  const isSearchData = pickupLocation && pickupDate
-  && returnDate
-  const [filteredCars, setFilteredCars] = useState([])
+  const isSearchData = pickupLocation && pickupDate && returnDate;
+  const [baseCars, setBaseCars] = useState([]);
+  const [filteredCars, setFilteredCars] = useState([]);
+
+  useEffect(() => {
+    if (!isSearchData) {
+      setBaseCars(cars);
+    }
+  }, [cars, isSearchData]);
+
+  const searchCarAvailability = async()=>{
+    const {data} = await axios.post('/api/bookings/check-availability',{location : pickupLocation, pickupDate, returnDate});
+    if(data.success){
+      setBaseCars(data.availableCars);
+      if(data.availableCars.length === 0){
+        toast('No cars available')
+      }
+    }
+  }
+
+  useEffect(()=>{
+    isSearchData && searchCarAvailability()
+  },[])
 
   const applyFilter = async()=>{
     if(input === ''){
-      setFilteredCars(cars);
+      setFilteredCars(baseCars);
       return null;
     }
-    const filtered = cars.slice().filter((car)=>{
+    const filtered = baseCars.slice().filter((car)=>{
       return car.brand.toLowerCase().includes(input.toLowerCase()) 
       || car.model.toLowerCase().includes(input.toLowerCase())
       ||car.category.toLowerCase().includes(input.toLowerCase())
@@ -35,24 +55,11 @@ const Cars = () => {
     setFilteredCars(filtered);
   }
 
-  const searchCarAvailability = async()=>{
-    const {data} = await axios.post('/api/bookings/check-availability',{location : pickupLocation, pickupDate, returnDate});
-    if(data.success){
-      setFilteredCars(data.availableCars);
-      if(data.availableCars.length === 0){
-        toast('No cars available')
-      }
-      return null
-    }
-  }
-
   useEffect(()=>{
-    isSearchData && searchCarAvailability()
-  },[])
-
-  useEffect(()=>{
-   cars.length > 0 && !isSearchData && applyFilter()
-  },[input, cars]);
+   if (baseCars.length >= 0) {
+     applyFilter()
+   }
+  },[input, baseCars]);
 
   return (
     <div>

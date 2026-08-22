@@ -47,7 +47,7 @@ const Sidebar = () => {
         text-primary cursor-pointer'onClick={updateImage}>Save <img src={assets.check_icon}
         width={13} alt=""  /></button>
       )}
-      <p className='mt-2 taxt-base max-md:hidden'>{user?.name} </p>
+      <p className='mt-2 text-base max-md:hidden truncate w-full px-2 text-center'>{user?.name} </p>
 
       <div className='w-full'>
         {ownerMenuLinks.map((link,index)=>(

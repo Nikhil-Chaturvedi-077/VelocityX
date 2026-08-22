@@ -13,7 +13,7 @@ const generateToken = (userId)=>{
 //* Register User
 export const registerUser = async(req,res)=>{
   try {
-    const {name,email,password} = req.body;
+    const {name,email,password,role} = req.body;
     if(!name || !email || !password || password.length<8)
     {
       return res.json({
@@ -34,7 +34,8 @@ export const registerUser = async(req,res)=>{
       const user = await User.create({
         name, 
         email, 
-        password:hashedPassword
+        password:hashedPassword,
+        role
       });
 
       const token = generateToken(user._id.toString())

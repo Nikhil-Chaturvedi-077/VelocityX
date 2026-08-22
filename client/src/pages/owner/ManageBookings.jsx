@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import Title from '../../components/owner/Title'
 import { useAppContext } from '../../context/AppContext'
+import toast from 'react-hot-toast'
 
 const ManageBookings = () => {
 
   const {currency, axios} = useAppContext()
 
-  const [bookings, setBookings] = useState([])
+  const [bookings, setBookings] = useState([]) 
 
   const fetchOwnerBookings = async()=>{
     try {
-      const {data} = await axios.get('/api/bookings/owner')
+      const {data} = await axios.get('/api/booking/owner')
       if(data.success){
         setBookings(data.bookings);
       }else{
@@ -23,7 +24,7 @@ const ManageBookings = () => {
 
   const changeBookingStatus = async(bookingId, status)=>{
     try {
-      const {data} = await axios.post('/api/bookings/change-status',{bookingId, status});
+      const {data} = await axios.post('/api/booking/change-status',{bookingId, status});
       if(data.success){
         toast.success(data.message);
         fetchOwnerBookings()

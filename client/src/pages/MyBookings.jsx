@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState} from 'react';
+import {useNavigate} from "react-router-dom"
 import { assets} from '../assets/assets';
 import Title from '../components/Title'
 import { useAppContext } from '../context/AppContext';
@@ -6,14 +7,16 @@ import toast from 'react-hot-toast';
 import { motion } from 'motion/react';
 const MyBookings = () => {
 
+  const navigate = useNavigate();
+
   const {axios, user, currency} = useAppContext(); 
 
   const [bookings, setBookings] = useState([]);
 
-
   const fetchMyBookings = async ()=>{
     try {
-      const {data} = await axios.get('/api/bookings/user')
+      const {data} = await axios.get('/api/booking/user');
+      
       if(data.success){
         setBookings(data.bookings)
       }else{
@@ -25,6 +28,11 @@ const MyBookings = () => {
   }
 
   useEffect(()=>{
+    if(!user){
+      toast.error("Login first to access bookings.");
+      navigate("/");
+      return ;
+    }
    user && fetchMyBookings();
   },[user])
 

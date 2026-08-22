@@ -73,7 +73,7 @@ export const addCar = async(req,res)=>{
 }
 
 // API to List Owner Cars
-export const getOwnerCars = async()=>{
+export const getOwnerCars = async(req,res)=>{
   try { 
     const {_id}=req.user;
     const cars = await Car.find({owner:_id});
@@ -147,7 +147,7 @@ export const getDashBoardData = async (req,res)=>{
 
     const dashboardData = {
       totalCars: cars.length,
-      totalBookings : booking.length,
+      totalBookings : bookings.length,
       pendingBookings : pendingBookings.length,
       completeBookings: completeBookings.length,
       recentBookings : bookings.slice(0,3),

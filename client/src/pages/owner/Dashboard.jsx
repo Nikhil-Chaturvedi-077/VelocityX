@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { assets, dummyDashboardData } from '../../assets/assets'
 import Title from '../../components/owner/Title'
 import { useAppContext } from '../../context/AppContext'
+import toast from 'react-hot-toast'
 
 const Dashboard = () => {
 
@@ -11,7 +12,7 @@ const Dashboard = () => {
     totalCars : 0,
     totalBookings : 0,
     pendingBookings : 0,
-    completedBookings : 0,
+    completeBookings : 0,
     recentBookings : [],
     monthlyRevenue : 0,
   })
@@ -20,7 +21,7 @@ const Dashboard = () => {
     {title : "Total Cars", value : data.totalCars, icon : assets.carIconColored},
     {title : "Total Bookings", value : data.totalBookings, icon : assets.listIconColored},
     {title : "Pending", value : data.pendingBookings, icon : assets.cautionIconColored},
-    {title : "Confirmed", value : data.completedBookings, icon : assets.listIconColored},
+    {title : "Confirmed", value : data.completeBookings, icon : assets.listIconColored},
 
   ]
 

@@ -21,7 +21,7 @@ export const checkAvailabilityofCar = async(req,res)=>{
     // check car availability for the given date range using promise
     const availabileCarsPromises = cars.map(async(car)=>{
      const isAvailable = await checkAvailability(car._id, pickupDate, returnDate)
-     return {...car._dov, isAvailable:isAvailable}
+     return {...car._doc, isAvailable:isAvailable}
     })
 
     let availableCars = await Promise.all(availabileCarsPromises);
@@ -80,7 +80,7 @@ export const createBooking = async(req,res)=>{
 export const getUserBookings = async(req,res)=>{
   try {
     const {_id} = req.user;
-    const bookings = (await Booking.find({user:_id}).populate("car")).sort({createdAt:-1});
+    const bookings = await Booking.find({user:_id}).populate("car").sort({createdAt:-1});
     res.json({success:true,
       bookings
     });

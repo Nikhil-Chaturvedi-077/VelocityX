@@ -4,13 +4,22 @@ import Sidebar from '../../components/owner/Sidebar'
 import { Outlet } from 'react-router-dom'
 import { useAppContext } from '../../context/AppContext'
 const Layout = () => {
-  const {isOwner, navigate} = useAppContext();
+  const {isOwner, isCheckingAuth, navigate} = useAppContext();
 
   useEffect(()=>{
-    if(!isOwner){
+    if(!isCheckingAuth && !isOwner){
       navigate('/')
     }
-  },[isOwner])
+  },[isOwner, isCheckingAuth])
+
+  if (isCheckingAuth) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
+
+  if (!isOwner) {
+    return null;
+  }
+
   return (
     <div className='flex flex-col'>
       <NavbarOwner/>

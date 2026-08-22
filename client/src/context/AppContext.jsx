@@ -21,6 +21,8 @@ export const AppProvider=({children})=>{
   const [pickupDate, setPickupDate] = useState('')
   const [returnDate, setReturnDate] = useState('')
 
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+
   const [cars,setCars] = useState([])
 
   //Function to check if user is logged in
@@ -36,6 +38,8 @@ export const AppProvider=({children})=>{
       }
     } catch (error) {
       toast.error(error.message)
+    } finally {
+      setIsCheckingAuth(false)
     }
   }
 
@@ -58,11 +62,16 @@ export const AppProvider=({children})=>{
     axios.defaults.headers.common['Authorization']=
     ''
     toast.success('You have been logged out')
+    navigate("/");
   }
   //useEffect to retrieve the token from localStorage
   useEffect(()=>{
     const token = localStorage.getItem('token')
-    setToken(token)
+    if(token){
+      setToken(token)
+    } else {
+      setIsCheckingAuth(false)
+    }
     fetchCars()
   },[])
 
@@ -78,7 +87,7 @@ export const AppProvider=({children})=>{
   const value = {
     navigate, currency, axios, user, setUser,
     token, setToken, isOwner, setIsOwner,
-    fetchUser, showLogin, setShowLogin, logout, fetchCars, cars, setCars, pickupDate, setPickupDate,returnDate, setReturnDate
+    fetchUser, showLogin, setShowLogin, logout, fetchCars, cars, setCars, pickupDate, setPickupDate,returnDate, setReturnDate, isCheckingAuth
   }
   return (
   <AppContext.Provider value={value}>
