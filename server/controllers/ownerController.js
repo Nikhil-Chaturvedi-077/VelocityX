@@ -1,201 +1,288 @@
-import imagekit from "../configs/imageKit.js";
 import Booking from "../models/Booking.js";
 import Car from "../models/Car.js";
 import User from "../models/User.js";
-import fs from 'fs';
+import cloudinary from "../configs/cloudinary.js";
 
-export const changeRoleToOwner = async(req,res)=>{
+export const changeRoleToOwner = async (req, res) => {
   try {
-    const {_id} = req.user;
-    await User.findByIdAndUpdate(_id,{role:"owner"});
+    const { _id } = req.user;
+
+    await User.findByIdAndUpdate(_id, { role: "owner" });
+
     res.json({
-      success:true,
-      message:"Now you can list cars"
+      success: true,
+      message: "Now you can list cars",
     });
   } catch (error) {
     console.log(error.message);
+
     res.json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message,
     });
   }
-}
+};
 
-//*Api to list car
-export const addCar = async(req,res)=>{
+// API to list car
+export const addCar = async (req, res) => {
   try {
-    const {_id} = req.user;
-    let car = JSON.parse(req.body.carData);
+    const { _id } = req.user;
+
+    const car = JSON.parse(req.body.carData);
     const imageFile = req.file;
 
-    //* Upload Image to Imagekit
-    const fileBuffer = fs.readFileSync(imageFile.path)
-    const response = await imagekit.upload({
-      file:fileBuffer,
-      fileName:imageFile.originalname,
-      folder:'/cars'
-    })
+    if (!imageFile) {
+      return res.json({
+        success: false,
+        message: "Car image is required",
+      });
+    }
 
-    //*optimization through imagekit URL transformation
-    var optimizedImageUrl = imagekit.url({
-      path: response.filePath,
-      transformation: [
-        {width:'1280'}, // width resizing
-        {quality:'auto'}, //Auto compression
-        {width:'webp'} // Convert to modern format
-      ]
+    // Upload image to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "cars",
+          transformation: [
+            {
+              width: 1280,
+              quality: "auto",
+              fetch_format: "auto",
+            },
+          ],
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      stream.end(imageFile.buffer);
     });
 
-    const image = optimizedImageUrl;
-    
-    // await Car.create({...car, owner:_id, image})
+    const image = result.secure_url;
+
     const newCar = await Car.create({
       ...car,
-      owner:_id,
-      image
-   });
-   
-   console.log(newCar);
-   
-
-    res.json({
-      success:true,
-      message:"Car Added"
+      owner: _id,
+      image,
     });
 
+    console.log(newCar);
+
+    res.json({
+      success: true,
+      message: "Car Added",
+    });
   } catch (error) {
     console.log(error.message);
+
     res.json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message,
     });
   }
-}
+};
 
 // API to List Owner Cars
-export const getOwnerCars = async(req,res)=>{
-  try { 
-    const {_id}=req.user;
-    const cars = await Car.find({owner:_id});
-    res.json({success:true, cars});
+export const getOwnerCars = async (req, res) => {
+  try {
+    const { _id } = req.user;
+
+    const cars = await Car.find({ owner: _id });
+
+    res.json({
+      success: true,
+      cars,
+    });
   } catch (error) {
     console.log(error.message);
-    res.json({success:false,message:error.message});
-  }
-}
 
-// API to Toggle Car Avalilability
-export const toggleCarAvailability = async(req,res)=>{
-  try { 
-    const {_id} = req.user;
-    const {carId} = req.body
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// API to Toggle Car Availability
+export const toggleCarAvailability = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const { carId } = req.body;
+
     const car = await Car.findById(carId);
 
-    // Checking is car belongs to the user
-    if(car.owner.toString() !== _id.toString()){
-      return res.json({success:false, message: "Unauthorized"});
+    if (car.owner.toString() !== _id.toString()) {
+      return res.json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
     car.isAvailable = !car.isAvailable;
+
     await car.save();
-    res.json({success:true, message:"Availability Toggled"});
+
+    res.json({
+      success: true,
+      message: "Availability Toggled",
+    });
   } catch (error) {
     console.log(error.message);
-    res.json({success: false, message: error.message});
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
 
 // API to Delete a car
-export const deleteCar = async (req,res)=>{
-  try { 
-    const {_id} = req.user;
-    const {carId} = req.body
+export const deleteCar = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const { carId } = req.body;
+
     const car = await Car.findById(carId);
 
-    // Checking is car belongs to the user
-    if(car.owner.toString() !== _id.toString()){
-      return res.json({success:false, message: "Unauthorized"});
+    if (car.owner.toString() !== _id.toString()) {
+      return res.json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
     car.owner = null;
     car.isAvailable = false;
+
     await car.save();
-    res.json({success:true, message:"Car Removed"});
+
+    res.json({
+      success: true,
+      message: "Car Removed",
+    });
   } catch (error) {
     console.log(error.message);
-    res.json({success: false, message: error.message});
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
-}
+};
 
-// API to get DashBoard data
-export const getDashBoardData = async (req,res)=>{
+// API to get Dashboard data
+export const getDashBoardData = async (req, res) => {
   try {
-    const {_id, role} = req.user;
+    const { _id, role } = req.user;
 
-    if(role!=='owner'){
-      return res.json({success:false, message:"Unauthorized"});
+    if (role !== "owner") {
+      return res.json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
-    const cars = await Car.find({owner:_id});
-    const bookings = await Booking.find({owner:_id}).populate('car').sort({createdAt:-1});
+    const cars = await Car.find({ owner: _id });
 
-    const pendingBookings = await Booking.find({owner:_id,status:"pending"});
-    const completeBookings = await Booking.find({owner:_id,status:"confirmed"});
+    const bookings = await Booking.find({ owner: _id })
+      .populate("car")
+      .sort({ createdAt: -1 });
 
-    //calculating monthly revenue when status is confirmed
-    const monthlyRevenue = bookings.slice().filter(booking => booking.status === 'confirmed').reduce((acc,booking)=>acc+booking.price,0);
+    const pendingBookings = await Booking.find({
+      owner: _id,
+      status: "pending",
+    });
+
+    const completeBookings = await Booking.find({
+      owner: _id,
+      status: "confirmed",
+    });
+
+    const monthlyRevenue = bookings
+      .slice()
+      .filter((booking) => booking.status === "confirmed")
+      .reduce((acc, booking) => acc + booking.price, 0);
 
     const dashboardData = {
       totalCars: cars.length,
-      totalBookings : bookings.length,
-      pendingBookings : pendingBookings.length,
+      totalBookings: bookings.length,
+      pendingBookings: pendingBookings.length,
       completeBookings: completeBookings.length,
-      recentBookings : bookings.slice(0,3),
-      monthlyRevenue
+      recentBookings: bookings.slice(0, 3),
+      monthlyRevenue,
+    };
+
+    res.json({
+      success: true,
+      dashboardData,
+    });
+  } catch (error) {
+    console.log(error.message);
+
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// API to update user image
+export const updateUserImage = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const imageFile = req.file;
+
+    if (!imageFile) {
+      return res.json({
+        success: false,
+        message: "Image is required",
+      });
     }
 
-    res.json({success:true, dashboardData});
+    // Upload image to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "users",
+          transformation: [
+            {
+              width: 400,
+              quality: "auto",
+              fetch_format: "auto",
+            },
+          ],
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
 
-  } catch (error) {
-    console.log(error.message);
-    res.json({success: false, message: error.message});
-  }
-}
-
-// Api to update user image
-export const updateUserImage = async(req,res)=>{
-  try {
-    const {_id,role} = req.user;
-    const imageFile = req.file;
-    
-    //* Upload Image to Imagekit
-    const fileBuffer = fs.readFileSync(imageFile.path)
-    const response = await imagekit.upload({
-      file:fileBuffer,
-      fileName: imageFile.originalname,
-      folder:'/users'
-    })
-
-    //*optimization through imagekit URL transformation
-    var optimizedImageUrl = imagekit.url({
-      path: response.filePath,
-      transformation: [
-        {width:'400'}, // width resizing
-        {quality:'auto'}, //Auto compression
-        {width:'webp'} // Convert to modern format
-      ]
+      stream.end(imageFile.buffer);
     });
 
-    const image = optimizedImageUrl;
+    const image = result.secure_url;
 
-    await User.findByIdAndUpdate(_id, {image});
-    res.json({success:true, message :"Image Updated"});
+    await User.findByIdAndUpdate(_id, { image });
 
-
+    res.json({
+      success: true,
+      message: "Image Updated",
+    });
   } catch (error) {
     console.log(error.message);
-    res.json({success:false,
-      message : error.message
+
+    res.json({
+      success: false,
+      message: error.message,
     });
   }
-}
+};
